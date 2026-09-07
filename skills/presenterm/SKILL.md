@@ -23,6 +23,7 @@ This skill guides the agent in authoring, structuring, and verifying terminal-ba
 > - **Speaker Notes Syntax**: Always wrap speaker note content in double quotes: `<!-- speaker_note: "Your speaker notes here..." -->`. This is required for YAML parsing, especially when text contains colons or special characters.
 > - **Incremental Lists Syntax**: Specify an explicit boolean value for incremental lists: `<!-- incremental_lists: true -->` (or `<!-- incremental_lists: false -->`).
 > - **Slide Delimiters**: Delimit slides using `<!-- end_slide -->`.
+> - **Typst Math Blocks**: Include `#set page(fill: none)` as the default at the start of any `typst +render` block so the rendered equation image blends with the terminal background.
 
 ### File Structure & Frontmatter
 Every deck begins with a YAML frontmatter block. `presenterm` automatically builds a standardized title slide (introduction slide) when these properties are defined:
@@ -173,11 +174,12 @@ internet -> lb -> services
 ````
 
 ### Math Formulas (Typst & LaTeX)
-Uses Typst as the rendering engine (LaTeX is converted to Typst via pandoc):
+Uses Typst as the rendering engine (LaTeX is converted to Typst via pandoc). Always include `#set page(fill: none)` by default so equation images blend seamlessly with the presentation background:
 
 ````markdown
 ```typst +render +width:60%
-$ f(x) = integral_(-infinity)^infinity e^(-x^2) dif x = sqrt(pi) $
+#set page(fill: none)
+$x = (x_1, ..., x_n)^T in RR^n$
 ```
 ````
 
