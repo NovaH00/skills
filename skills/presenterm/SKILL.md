@@ -227,7 +227,7 @@ Or for multi-line notes:
 ```
 
 - **Main presentation screen**: `presenterm --publish-speaker-notes slides.md`
-- **Private secondary monitor**: `presenterm --listen-speaker-notes`
+- **Private secondary monitor**: `presenterm --listen-speaker-notes slides.md`
 
 ### Slide Transitions
 ```yaml
@@ -258,9 +258,4 @@ presenterm --export-pdf slides.md -o presentation.pdf
 - **List Built-in Comment Commands**:
 ```bash
 presenterm --list-comment-commands
-```
-
-- **Preview All Themes**:
-```bash
-presenterm --list-themes
 ```
