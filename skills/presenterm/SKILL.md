@@ -3,13 +3,13 @@ name: presenterm
 description: >-
   Create, format, validate, and present terminal slideshow presentations using presenterm.
   Use this skill when authoring terminal presentations in Markdown, configuring slide layouts,
-  executing code snippets (+exec, +validate), embedding diagrams (Mermaid, D2), rendering Typst/LaTeX math,
-  or exporting slides to PDF/HTML.
+  executing code snippets (+exec, +validate, +pty, snippet_output), embedding diagrams (Mermaid, D2),
+  rendering Typst math (+render), or exporting slides to PDF/HTML.
 ---
 
 # Presenterm Presentation Authoring Skill
 
-This skill guides the agent in authoring, structuring, and verifying terminal-based presentations using `presenterm`.
+This skill guides the agent in authoring, structuring, formatting, and verifying terminal-based presentations using `presenterm`.
 
 ---
 
@@ -17,24 +17,31 @@ This skill guides the agent in authoring, structuring, and verifying terminal-ba
 
 `presenterm` is a high-performance terminal slideshow tool written in Rust that renders Markdown slides directly in the terminal using protocols like Kitty Graphics, iTerm2, Sixel, and ASCII fallback.
 
-### Core Syntax & Markdown Guidelines
+### Core Guidelines & Rules
 > [!IMPORTANT]
+> - **Slide Delimiters**: Delimit and end slides using `<!-- end_slide -->`.
+> - **Math Formulas (Typst Only)**: Presenterm uses **Typst** as its rendering engine. **Never use LaTeX syntax** (neither ```` ```latex +render ```` nor inline `$...$`). All math must be written in Typst syntax inside ```` ```typst +render ```` code blocks.
+> - **No Inline Math Delimiters**: Presenterm does **not** render inline `$ ... $` or Typst math inline within paragraphs. For simple scalar variables in text, use plain Unicode characters (e.g. `n`, `m`, `x₀`, `α`). For formulas beyond basic Unicode, use a separate Typst render block.
 > - **Code Block Placement**: Place code blocks at the root slide level (0 indentation). When displaying code alongside list items, place the code block between separate list sections.
-> - **Speaker Notes Syntax**: Always wrap speaker note content in double quotes: `<!-- speaker_note: "Your speaker notes here..." -->`. This is required for YAML parsing, especially when text contains colons or special characters.
-> - **Incremental Lists Syntax**: Specify an explicit boolean value for incremental lists: `<!-- incremental_lists: true -->` (or `<!-- incremental_lists: false -->`).
-> - **Slide Delimiters**: Delimit slides using `<!-- end_slide -->`.
-> - **Typst Math Blocks**: Include `#set page(fill: none)` as the default at the start of any `typst +render` block so the rendered equation image blends with the terminal background.
+> - **Speaker Notes Syntax**: Always wrap speaker note content in double quotes: `<!-- speaker_note: "Your speaker notes here..." -->`. This ensures robust YAML parsing when text contains colons, quotes, or special characters.
+> - **Incremental Lists Syntax**: Always specify an explicit boolean value: `<!-- incremental_lists: true -->` or `<!-- incremental_lists: false -->`.
+> - **Reset Layouts**: Always follow a multi-column block with `<!-- reset_layout -->` before normal slide content resumes.
+> - **Terminal Overflow Awareness**: Terminal viewports have finite vertical space. Avoid overly verbose slides, excessive blank lines, or large code snippets. Split content across slides or adjust spacing using `<!-- list_item_newlines: N -->`.
+> - **HTML Restrictions**: Only `<span>` with inline styles (specifically `color` and `background-color`, e.g. `style="color: palette:red"`) is supported. Arbitrary HTML tags like `<div>`, `<p>`, `<img>`, `<br>` are **not** supported.
+> - **Local Media Paths**: Embedded images and files must use paths relative to the presentation markdown file or within its directory hierarchy.
 
 ### File Structure & Frontmatter
-Every deck begins with a YAML frontmatter block. `presenterm` automatically builds a standardized title slide (introduction slide) when these properties are defined:
+Every deck begins with a YAML frontmatter block enclosed in `---`. `presenterm` automatically builds a standardized title slide when these properties are defined:
 
 ```markdown
 ---
 title: "Distributed System Architecture"
 sub_title: "Design Principles & Operations 2026"
-authors:
-  - "Alice Smith"
-  - "Bob Jones"
+author: "Alice Smith"
+# Or multiple authors:
+# authors:
+#   - "Alice Smith"
+#   - "Bob Jones"
 theme:
   name: catppuccin-mocha
 ---
@@ -49,11 +56,22 @@ theme:
 
 ### Slide Delimiters & Headings
 - **Slide Delimiters**: Delimit and end slides using the `<!-- end_slide -->` comment command.
-- **Slide Titles (Setext Level 1)**: Presenterm recognizes Setext level 1 headings (`===` directly underneath the title line). When encountered, it vertically and horizontally centers the title, adds padding, and highlights it with the theme's accent color.
+- **Slide Titles (Setext Level 1)**: Presenterm recognizes Setext level 1 headings (`===` directly underneath the title line). It vertically and horizontally centers the title, applies theme styling, and provides visual emphasis:
 
 ```markdown
 System Architecture Overview
 ============================
+```
+
+- **Section / Separator Slides**: Combine `<!-- jump_to_middle -->` with a Setext header to produce a clean visual divider slide between major sections:
+
+```markdown
+<!-- jump_to_middle -->
+
+Deep Dive: Consensus Algorithms
+===============================
+
+<!-- end_slide -->
 ```
 
 ---
@@ -64,21 +82,24 @@ Presenterm uses HTML comment commands (`<!-- command -->`) for slide control wit
 
 | Command | Scope | Functionality |
 | :--- | :--- | :--- |
-| `<!-- end_slide -->` | Current line | Delimits and ends the current slide. |
+| `<!-- end_slide -->` | Current line | Delimits and ends the current slide (mandatory slide separator). |
 | `<!-- pause -->` | Current line | Halts rendering until next step keypress. |
-| `<!-- incremental_lists: true\|false -->` | Rest of slide | Toggles automatic pause between each list bullet (requires boolean). |
-| `<!-- list_item_newlines: N -->` | Rest of slide | Inserts `N` blank lines between list items for spacing. |
-| `<!-- column_layout: [w1, w2, ...] -->` | Layout block | Splits terminal width into columns using relative integer weights (e.g. `[1, 1]` or `[1, 2]`). |
-| `<!-- column: N -->` | Layout block | Directs subsequent Markdown content to column index `N` (0-based). |
-| `<!-- reset_layout -->` | Rest of slide | Closes multi-column mode and restores full slide width. |
-| `<!-- jump_to_middle -->` | Current line | Shifts vertical rendering point down to middle of slide. |
-| `<!-- new_line -->` / `<!-- newlines: N -->` | Current line | Forces insertion of 1 or `N` blank lines. |
-| `<!-- alignment: left\|center\|right -->` | Rest of slide | Sets horizontal alignment for all subsequent elements. |
-| `<!-- font_size: 1-7 -->` | Rest of slide | Changes font scale (supported on Kitty v0.40.0+). |
-| `<!-- include: path/to/file.md -->` | Insertion point | Directly embeds an external Markdown file at that position. |
+| `<!-- incremental_lists: true\|false -->` | Rest of slide | Toggles automatic pause between list bullets (requires explicit boolean). |
+| `<!-- list_item_newlines: N -->` | Rest of slide | Sets number of blank lines (`N`) between list bullets to adjust vertical density. |
+| `<!-- column_layout: [w1, w2, ...] -->` | Layout block | Splits terminal width into columns with integer ratio weights (e.g. `[1, 1]`, `[1, 2]`). |
+| `<!-- column: N -->` | Layout block | Directs subsequent Markdown content into column `N` (0-based index). |
+| `<!-- reset_layout -->` | Rest of slide | Closes multi-column mode and restores full slide width. **Required after columns.** |
+| `<!-- jump_to_middle -->` | Current line | Moves vertical rendering position down to the center of the terminal. |
+| `<!-- new_line -->` | Current line | Inserts exactly 1 blank line (bypasses Markdown blank line collapsing). |
+| `<!-- new_lines: N -->` | Current line | Inserts exactly `N` blank lines. Note plural spelling: `new_lines`. |
+| `<!-- alignment: left\|center\|right -->` | Rest of slide | Sets horizontal text alignment for all subsequent elements. |
+| `<!-- font_size: 1-7 -->` | Rest of slide | Changes font scale (supported on compatible terminals like Kitty v0.40.0+). `1` is default. |
+| `<!-- include: path/to/file.md -->` | Insertion point | Transcludes external Markdown file into current slide location. Relative paths are resolved relative to included file. |
+| `<!-- speaker_note: "..." -->` | Current slide | Attaches speaker notes for UDP broadcast / presenter view (wrap in double quotes). |
+| `<!-- snippet_output: identifier -->` | Insertion point | Renders the captured stdout/stderr from a code block tagged with `+id:identifier`. |
 | `<!-- no_footer -->` | Entire slide | Hides footer on the current slide. |
-| `<!-- skip_slide -->` | Entire slide | Excludes current slide from the running presentation. |
-| `<!-- speaker_note: "..." -->` | Current slide | Attaches speaker note text to slide for UDP broadcast (wrap text in double quotes). |
+| `<!-- skip_slide -->` | Entire slide | Excludes current slide from the running presentation deck. |
+| `<!-- // comment -->` or `<!-- comment: text -->` | N/A | Developer comments / TODOs ignored by presenterm during presentation. |
 
 ### Column Layout Pattern
 ```markdown
@@ -134,16 +155,44 @@ start_line: 15
 end_line: 30
 ```
 
-### Live Code Execution
-> **Security Notice**: Code execution is disabled by default. Run presenterm with `-x` (`--enable-snippet-execution`) or `-X` (`--enable-snippet-execution-replace`).
+### Code Execution Directives
+> [!NOTE]
+> Code execution is disabled by default for security. Run presenterm with `-x` (`--enable-snippet-execution`) or `-X` (`--enable-snippet-execution-replace`).
 
 - `+exec`: Executes on demand when pressing `Ctrl+e`. Output displays in a pane beneath code.
-- `+auto_exec`: Runs immediately when slide is entered.
-- `+exec_replace`: Replaces the original code block with its actual stdout/stderr (useful for directory trees, live CLI output, curl results).
+- `+auto_exec`: Runs automatically when the slide is navigated into.
+- `+exec_replace`: Automatically executes and **completely replaces** the code block with its stdout/stderr output (ideal for live CLI output, directory trees, dynamic ASCII art).
 - `+validate`: Runs the snippet during presentation deck loading; fails with an alert if exit code is non-zero (ideal for verifying presentation integrity).
+- `+pty` / `+pty:COLS:ROWS`: Runs interactive code inside a pseudo-terminal (e.g. CLI TUIs). Add `+pty:standby` to pre-allocate display space before execution.
 
-```bash +auto_exec
-date +"Current system date: %Y-%m-%d"
+### Snippet Output Redirection (`+id` & `snippet_output`)
+Run code in one place (or column) and render its output in another:
+
+````markdown
+<!-- column_layout: [1, 1] -->
+<!-- column: 0 -->
+
+```bash +exec +id:sys_info
+uname -a
+```
+
+<!-- column: 1 -->
+
+#### System Kernel Details:
+<!-- snippet_output: sys_info -->
+
+<!-- reset_layout -->
+````
+
+### Hiding Boilerplate Lines
+Hide boilerplate imports or setup lines during presentation while keeping them intact for execution:
+- **Rust**: Prefix line with `#`
+- **Python / Bash / JS / TS / C / C++ / Go / etc.**: Prefix line with `///`
+
+```python +auto_exec
+///import json
+///data = {"status": "ok", "service": "auth"}
+print("Service running:", data["service"])
 ```
 
 ---
@@ -173,8 +222,11 @@ internet -> lb -> services
 ```
 ````
 
-### Math Formulas (Typst & LaTeX)
-Uses Typst as the rendering engine (LaTeX is converted to Typst via pandoc). Always include `#set page(fill: none)` by default so equation images blend seamlessly with the presentation background:
+### Math Formulas (Typst)
+`presenterm` renders equations through Typst code blocks (`+render`)—never raw LaTeX.
+
+#### 1. Display Equations
+Format complex or multi-line equations using ```` ```typst +render ```` blocks placed at root level, with `#set page(fill: none)` so formulas blend with the background:
 
 ````markdown
 ```typst +render +width:60%
@@ -182,6 +234,46 @@ Uses Typst as the rendering engine (LaTeX is converted to Typst via pandoc). Alw
 $x = (x_1, ..., x_n)^T in RR^n$
 ```
 ````
+
+#### 2. Convert Inline Expressions into Mini Render Blocks
+For inline mathematical notation that Unicode cannot cleanly express, break it into a small centered Typst render block:
+
+````markdown
+Vector Setting:
+
+```typst +render
+#set page(width: auto, height: auto, margin: 0pt, fill: none)
+#set text(size: 18pt, fill: rgb("#e2e8f0"))
+
+$ bold(f): RR^n -> RR^m $
+```
+````
+
+For simple variables inside text sentences, use plain Unicode characters (e.g. `n`, `m`, `x₀`, `α`) rather than dollar-math delimiters.
+
+#### Typst Math Syntax Quick Reference
+Typst uses its own native math notation—**not LaTeX**. Do not use backslashes (`\`) or LaTeX macro names. Use standard Typst identifier names and functions:
+
+| Concept | Typst Syntax | LaTeX Equivalent (Do Not Use) |
+| :--- | :--- | :--- |
+| Function composition | `compose` or `circle.small` | `\circ` |
+| Multiplication dot | `dot` | `\cdot` |
+| Cross product | `times` | `\times` |
+| Bold math symbols | `bold(J)` or `bold(v)` | `\mathbf{J}`, `\boldsymbol{J}` |
+| Greek letters | `alpha`, `beta`, `Delta`, `theta`, `phi` | `\alpha`, `\beta`, `\Delta` |
+| Number sets | `RR`, `NN`, `ZZ`, `CC` | `\mathbb{R}`, `\mathbb{N}` |
+| Arrows / Implies | `arrow`, `arrow.r`, `=>`, `<=>` | `\to`, `\rightarrow`, `\implies`, `\iff` |
+| Fractions | `(a) / (b)` | `\frac{a}{b}` |
+| Subscripts / Superscripts | `x_0`, `x^2`, `(x_1, ..., x_n)^T` | `x_0`, `x^2`, `x^T` |
+| Diagonal dots (matrices) | `dots.down` (or `dots.up`) | `\ddots` |
+| Horizontal / Vertical dots | `dots.h` (or `dots`), `dots.v` | `\cdots` / `\ldots`, `\vdots` |
+| Matrices | `mat(1, 2; 3, 4)` | `\begin{matrix}...\end{matrix}` |
+| Partial derivative | `partial` | `\partial`, `diff` |
+| Differential / Gradient | `dif`, `nabla` | `\mathrm{d}`, `\nabla` |
+| Square root | `sqrt(x)` | `\sqrt{x}` |
+| Integrals / Summations | `integral`, `sum` | `\int`, `\sum` |
+| Relations / Approx | `approx`, `eq.def`, `in`, `subset` | `\approx`, `\triangleq`, `\in` |
+| Text inside math | `"text in quotes"` | `\text{...}` |
 
 *(Configure formula rendering sharpness via `typst.ppi: 300` in global/deck config).*
 
@@ -228,8 +320,8 @@ Or for multi-line notes:
 <!-- speaker_note: "Remind audience about SLA limits.\nExplain why Redis cache was chosen over Memcached." -->
 ```
 
-- **Main presentation screen**: `presenterm --publish-speaker-notes slides.md`
-- **Private secondary monitor**: `presenterm --listen-speaker-notes slides.md`
+- **Main presentation screen**: `presenterm -P slides.md` (or `--publish-speaker-notes`)
+- **Private secondary monitor**: `presenterm -l slides.md` (or `--listen-speaker-notes`)
 
 ### Slide Transitions
 ```yaml
@@ -242,18 +334,27 @@ transition:
 
 ### CLI Verification & Export Commands
 
-- **Check / Validate Code Snippets**:
+- **Check & Validate Code Snippets**:
 ```bash
 presenterm --validate-snippets slides.md
 ```
 
+- **Validate Overflow (Prevent terminal text truncation)**:
+```bash
+presenterm --validate-overflows slides.md
+```
+
 - **Export to Single Self-Contained HTML** (bundles fonts & images as base64):
 ```bash
+presenterm -E slides.md -o presentation.html
+# or
 presenterm --export-html slides.md -o presentation.html
 ```
 
 - **Export to PDF** (uses `weasyprint`):
 ```bash
+presenterm -e slides.md -o presentation.pdf
+# or
 presenterm --export-pdf slides.md -o presentation.pdf
 ```
 
