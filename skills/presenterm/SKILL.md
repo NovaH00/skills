@@ -18,10 +18,19 @@ This skill guides the agent in authoring, structuring, formatting, and verifying
 `presenterm` is a high-performance terminal slideshow tool written in Rust that renders Markdown slides directly in the terminal using protocols like Kitty Graphics, iTerm2, Sixel, and ASCII fallback.
 
 ### Core Guidelines & Rules
+> [!CAUTION]
+> ### 🚫 ABSOLUTE PROHIBITION ON DOLLAR SIGNS (`$`) OUTSIDE TYPST FENCED BLOCKS
+> - **NEVER output dollar signs (`$`, `$$`) in markdown text or list items** (e.g. NEVER write `$Delta y approx f'(x) dot Delta x$`, `$x$`, or `$$...$$`). Presenterm does **NOT** support inline LaTeX or inline Typst. Raw `$ ... $` in text will **NOT render as math**—it will appear literally on the slide as ugly raw text or break slide parsing.
+> - **Zero Tolerance for `$ ... $`**:
+>   - ❌ **WRONG**: `the slope is $Delta y approx f'(x) dot Delta x$`
+>   - ❌ **WRONG**: `where $x$ is the input variable`
+>   - ✅ **CORRECT (Formula)**: Put it into a standalone root-level ```` ```typst +render ```` block!
+>   - ✅ **CORRECT (In-text scalar variable)**: Use plain Unicode characters (e.g., `x`, `y`, `Δy ≈ f'(x) · Δx`, `x₀`, `α`, `θ`)!
+
 > [!IMPORTANT]
 > - **Slide Delimiters**: Delimit and end slides using `<!-- end_slide -->`.
-> - **Math Formulas (Typst Only)**: Presenterm uses **Typst** as its rendering engine. **Never use LaTeX syntax** (neither ```` ```latex +render ```` nor inline `$...$`). All math must be written in Typst syntax inside ```` ```typst +render ```` code blocks.
-> - **No Inline Math Delimiters**: Presenterm does **not** render inline `$ ... $` or Typst math inline within paragraphs. For simple scalar variables in text, use plain Unicode characters (e.g. `n`, `m`, `x₀`, `α`). For formulas beyond basic Unicode, use a separate Typst render block.
+> - **Math Formulas (Typst Only)**: Presenterm uses **Typst** as its rendering engine. **Never use LaTeX syntax** (neither ```` ```latex +render ```` nor inline `$...$`). All math must be written in Typst syntax inside ```` ```typst +render ```` code blocks placed at the root level (0 indentation).
+> - **No Indentation for Math Blocks**: Never indent ```` ```typst +render ```` blocks inside bullet points or lists. Place them at root level between list items.
 > - **Code Block Placement**: Place code blocks at the root slide level (0 indentation). When displaying code alongside list items, place the code block between separate list sections.
 > - **Speaker Notes Syntax**: Always wrap speaker note content in double quotes: `<!-- speaker_note: "Your speaker notes here..." -->`. This ensures robust YAML parsing when text contains colons, quotes, or special characters.
 > - **Incremental Lists Syntax**: Always specify an explicit boolean value: `<!-- incremental_lists: true -->` or `<!-- incremental_lists: false -->`.
