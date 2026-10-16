@@ -1,42 +1,26 @@
 ---
 name: python-docstrings
-description: Format, validate, and write Python docstrings using Google docstring style with strict markdown backticks, comprehensive section requirements, variable docstrings, and zero Sphinx markup. Use when authoring, reviewing, or refactoring Python docstrings.
+description: Format, validate, and write Python docstrings using Google docstring style with comprehensive section requirements, variable docstrings, and zero Sphinx markup. Use when authoring, reviewing, or refactoring Python docstrings.
 ---
 
 # Python Docstrings Skill
 
-Write clear, structured, and modern Python docstrings. This skill enforces Google docstring style with four strict constraints:
+Write clear, structured, and modern Python docstrings. This skill enforces Google docstring style with three core constraints:
 1. **Zero Sphinx syntax**: Ban all `:param:`, `:class:`, `:meth:`, `:func:`, and related directives.
-2. **Backtick discipline**: Wrap every Python identifier, variable, parameter, class, function, type, and keyword in backticks (`` `...` ``).
-3. **Mandatory sections**: Populate `Args:`, `Returns:`, `Yields:`, and `Examples:` on all relevant functions, require `Raises:` for fallible code, and require `Attributes:` and `Methods:` on classes.
-4. **Variable docstrings**: Document ambiguous variables, module constants, and type aliases immediately below their assignment.
+2. **Mandatory sections**: Populate `Args:`, `Returns:`, `Yields:`, and `Examples:` on all relevant functions, require `Raises:` for fallible code, and require `Attributes:` and `Methods:` on classes.
+3. **Variable docstrings**: Document ambiguous variables, module constants, and type aliases immediately below their assignment.
 
 ---
 
 ## 1. Core Constraints
 
 ### Constraint 1: Zero Sphinx Markup
-Never use Sphinx reStructuredText role or field syntax. Use standard Markdown backticks and Google style section headers.
+Never use Sphinx reStructuredText role or field syntax. Use clean Google docstring style section headers and plain text.
 
 - ❌ **Forbidden**: `:param x:`, `:type x: int`, `:return:`, `:rtype:`, `:raises ValueError:`, `:class:`MyClass``, `:meth:`obj.method``, `:func:`helper``
-- ✅ **Required**: Use Google style section headers (`Args:`, `Returns:`, `Raises:`) and backtick-wrapped names (`MyClass`, `obj.method()`, `helper()`).
+- ✅ **Required**: Use standard Google style section headers (`Args:`, `Returns:`, `Raises:`) and plain prose without Sphinx roles.
 
-### Constraint 2: Strict Backtick Quoting
-Every reference to a Python language symbol or code entity must be enclosed in markdown backticks (`` `...` ``).
-
-This rule applies to:
-- Parameter names: `a`, `b`, `config`, `timeout_seconds`
-- Function and method names: `add(a, b)`, `compute()`, `process_items()`
-- Class and type names: `User`, `str`, `int`, `dict[str, Any]`, `Path`
-- Keywords and literals: `None`, `True`, `False`, `ValueError`, `0`, `""`
-- Attribute and variable names: `self.count`, `DEFAULT_TIMEOUT`
-- Modules and packages: `math`, `os.path`, `json`
-
-**Example**:
-- ❌ **Wrong**: The add function takes parameters a and b, calculates their sum, and returns None if failed.
-- ✅ **Right**: The `add(a, b)` function takes parameters `a` and `b`, calculates their sum, and returns `None` if the operation fails.
-
-### Constraint 3: Mandatory Sections
+### Constraint 2: Mandatory Sections
 
 Every docstring must populate all applicable sections. Do not omit sections that describe the public interface.
 
@@ -44,38 +28,38 @@ Every docstring must populate all applicable sections. Do not omit sections that
 1. **Summary line**: Imperative mood on the first line (e.g., `"Calculate the total score."`, not `"Calculates..."`).
 2. **Detailed description** (optional): Additional context separated by a blank line.
 3. **`Args:`** (Mandatory when function accepts arguments):
-   - Every parameter must be listed.
-   - When Python type hints exist in the signature, omit redundant types from the docstring header:
+   - Every parameter must be listed with its description.
+   - When Python type hints exist in the signature, omit redundant types from the header:
      ```python
      Args:
-         `user_id`: Unique identifier for the account user.
-         `timeout`: Maximum wait time in seconds. Defaults to `30.0`.
+         user_id: Unique identifier for the account user.
+         timeout: Maximum wait time in seconds. Defaults to 30.0.
      ```
    - If the function accepts `*args` or `**kwargs`, document both:
      ```python
      Args:
-         `*args`: Positional arguments forwarded to `base_handler()`.
-         `**kwargs`: Arbitrary keyword options passed to `Session`.
+         *args: Positional arguments forwarded to base_handler().
+         **kwargs: Arbitrary keyword options passed to Session.
      ```
 4. **`Returns:`** (Mandatory for non-generator functions):
-   - State what the function returns and describe special cases (e.g. `None` when not found).
+   - State what the function returns and describe special cases (e.g., `None` when not found).
    ```python
    Returns:
-       Calculated standard deviation as a `float`, or `None` if `values` is empty.
+       Calculated standard deviation as a float, or None if values is empty.
    ```
 5. **`Yields:`** (Mandatory for generator functions):
    - State the value yielded on each iteration.
    ```python
    Yields:
-       Next parsed `Record` instance from the input stream.
+       Next parsed Record instance from the input stream.
    ```
 6. **`Raises:`** (Mandatory for any fallible function or method):
    - List every exception that callers should expect and handle.
    - Describe the exact condition that triggers the exception.
    ```python
    Raises:
-       `ValueError`: If `channel_count` is less than `1`.
-       `FileNotFoundError`: If the file specified by `config_path` does not exist.
+       ValueError: If channel_count is less than 1.
+       FileNotFoundError: If the file specified by config_path does not exist.
    ```
 7. **`Examples:`** (Mandatory):
    - Provide runnable, clear examples formatted with doctest prompts (`>>>`) or fenced code blocks.
@@ -94,22 +78,22 @@ Every docstring must populate all applicable sections. Do not omit sections that
    - List all public instance and class attributes with their roles.
    ```python
    Attributes:
-       `name`: Human-readable label for the runner instance.
-       `is_active`: Boolean state indicating whether the worker is running.
-       `max_retries`: Maximum number of retry attempts permitted.
+       name: Human-readable label for the runner instance.
+       is_active: Boolean state indicating whether the worker is running.
+       max_retries: Maximum number of retry attempts permitted.
    ```
 3. **`Methods:`** (Mandatory):
    - Summarize the public interface and primary methods.
    ```python
    Methods:
-       `start()`: Initialize background threads and begin processing.
-       `stop()`: Gracefully drain active jobs and terminate workers.
-       `status()`: Return current execution statistics.
+       start(): Initialize background threads and begin processing.
+       stop(): Gracefully drain active jobs and terminate workers.
+       status(): Return current execution statistics.
    ```
 4. **`Examples:`** (Mandatory):
    - Show how to instantiate and use the class.
 
-### Constraint 4: Variable and Type Alias Docstrings
+### Constraint 3: Variable and Type Alias Docstrings
 
 Document variables that carry ambiguity, domain-specific conventions, non-obvious units, or custom formatting. Place a triple-quoted string immediately below the assignment.
 
@@ -130,7 +114,7 @@ Represents per-channel normalisation metrics formatted as (R, G, B).
 MAX_BATCH_SIZE: int = 128
 """Maximum number of records sent in one network payload.
 
-Values above `128` cause timeout errors in the upstream ingestion service.
+Values above 128 cause timeout errors in the upstream ingestion service.
 """
 ```
 
@@ -162,28 +146,28 @@ def calculate_moving_average(
 ) -> list[float]:
     """Compute the moving average across a numerical sequence.
 
-    Applies a sliding rectangular window over `values` with length `window_size`.
+    Applies a sliding rectangular window over values with length window_size.
 
     Args:
-        `values`: Ordered sequence of numeric readings to smooth.
-        `window_size`: Width of the sliding window in element counts. Must be
-            an odd integer greater than or equal to `1`.
-        `pad_mode`: Boundary handling strategy. Allowed options are `"reflect"`,
-            `"edge"`, or `"zero"`. Defaults to `"reflect"`.
+        values: Ordered sequence of numeric readings to smooth.
+        window_size: Width of the sliding window in element counts. Must be
+            an odd integer greater than or equal to 1.
+        pad_mode: Boundary handling strategy. Allowed options are "reflect",
+            "edge", or "zero". Defaults to "reflect".
 
     Returns:
-        New `list[float]` containing smoothed values matching the input length.
+        New list of floats containing smoothed values matching the input length.
 
     Raises:
-        `ValueError`: If `window_size` is less than `1` or is an even integer.
-        `ValueError`: If `pad_mode` is not one of the allowed options.
+        ValueError: If window_size is less than 1 or is an even integer.
+        ValueError: If pad_mode is not one of the allowed options.
 
     Examples:
         >>> calculate_moving_average([1.0, 2.0, 3.0, 4.0, 5.0], window_size=3)
         [1.3333333333333333, 2.0, 3.0, 4.0, 4.666666666666667]
 
     Notes:
-        Time complexity is O(N) where N is `len(values)`.
+        Time complexity is O(N) where N is len(values).
     """
     ...
 ```
@@ -200,21 +184,21 @@ def stream_log_records(
 ) -> Iterator[dict[str, str]]:
     """Yield log entries from disk that match or exceed the minimum severity.
 
-    Streams lines one at a time from `file_path` without loading the full
+    Streams lines one at a time from file_path without loading the full
     log file into memory.
 
     Args:
-        `file_path`: Path pointing to the target `.log` file on disk.
-        `min_severity`: Severity cutoff. Valid options are `"DEBUG"`, `"INFO"`,
-            `"WARNING"`, and `"ERROR"`. Defaults to `"INFO"`.
+        file_path: Path pointing to the target .log file on disk.
+        min_severity: Severity cutoff. Valid options are "DEBUG", "INFO",
+            "WARNING", and "ERROR". Defaults to "INFO".
 
     Yields:
-        Dictionary representing a single log record with keys `"timestamp"`,
-        `"level"`, and `"message"`.
+        Dictionary representing a single log record with keys "timestamp",
+        "level", and "message".
 
     Raises:
-        `FileNotFoundError`: If `file_path` does not exist on disk.
-        `ValueError`: If `min_severity` is not a recognized log level.
+        FileNotFoundError: If file_path does not exist on disk.
+        ValueError: If min_severity is not a recognized log level.
 
     Examples:
         >>> logs = list(stream_log_records(Path("app.log"), min_severity="ERROR"))
@@ -233,14 +217,14 @@ class TaskQueue:
     Maintains tasks sorted by priority level and coordinates worker consumption.
 
     Attributes:
-        `max_capacity`: Maximum number of jobs permitted in queue before backpressure.
-        `total_enqueued`: Monotonically increasing counter of all scheduled jobs.
-        `is_paused`: Flag indicating whether workers should defer dequeuing jobs.
+        max_capacity: Maximum number of jobs permitted in queue before backpressure.
+        total_enqueued: Monotonically increasing counter of all scheduled jobs.
+        is_paused: Flag indicating whether workers should defer dequeuing jobs.
 
     Methods:
-        `push(task, priority=0)`: Add a job item to the priority queue.
-        `pop()`: Remove and return the highest priority pending job.
-        `clear()`: Discard all queued jobs and reset state.
+        push(task, priority=0): Add a job item to the priority queue.
+        pop(): Remove and return the highest priority pending job.
+        clear(): Discard all queued jobs and reset state.
 
     Examples:
         >>> queue = TaskQueue(max_capacity=100)
@@ -254,10 +238,10 @@ class TaskQueue:
         """Initialize the task queue buffer.
 
         Args:
-            `max_capacity`: Upper threshold of queued items. Defaults to `1000`.
+            max_capacity: Upper threshold of queued items. Defaults to 1000.
 
         Raises:
-            `ValueError`: If `max_capacity` is less than `1`.
+            ValueError: If max_capacity is less than 1.
 
         Examples:
             >>> queue = TaskQueue(max_capacity=50)
@@ -278,13 +262,13 @@ ChannelNorm: TypeAlias = tuple[float, float, float]
 """Mean normalisation values for three image channels.
 
 Represents per-channel mean metrics formatted as (R, G, B) with values
-in range `[0.0, 1.0]`.
+in range [0.0, 1.0].
 """
 
 DEFAULT_RETRIES: int = 3
 """Number of network connection retries before propagating an error.
 
-A value of `0` disables retry logic completely.
+A value of 0 disables retry logic completely.
 """
 ```
 
@@ -295,7 +279,6 @@ A value of `0` disables retry logic completely.
 Before accepting a docstring, check off each item:
 
 - [ ] **No Sphinx artifacts**: No `:param:`, `:class:`, `:meth:`, or other `:` roles exist.
-- [ ] **Backticks in place**: Every parameter, function name, class name, type, and keyword is wrapped in `` `...` ``.
 - [ ] **Imperative summary**: First sentence starts with an imperative verb and ends with a period.
 - [ ] **Mandatory sections included**:
   - [ ] `Args:` is populated for all parameters.
