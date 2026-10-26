@@ -1,0 +1,24 @@
+\section{Results and Analysis}
+\label{sec:results}
+
+Present main quantitative findings followed by ablation studies.
+
+\subsection{Quantitative Performance}
+Format tables with \texttt{booktabs} and place captions above tables as shown in Table~\ref{tab:main_results}.
+
+\begin{table}[t]
+    \centering
+    \caption{Performance comparison on benchmark evaluations. Best results in bold.}
+    \label{tab:main_results}
+    \begin{tabular}{lccc}
+        \toprule
+        Method & Acc. (\%) & Lat. (ms) & Mem. (MB) \\
+        \midrule
+        Baseline~\cite{he2016deep} & 78.4 & 14.2 & 512 \\
+        Ours & \textbf{83.1} & \textbf{11.8} & \textbf{384} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Ablation Studies}
+Discuss component contributions and qualitative visualizations.

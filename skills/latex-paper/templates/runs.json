@@ -1,0 +1,24 @@
+{
+  "runs": {
+    "baseline_resnet50": {
+      "description": "Baseline training run on standard benchmark split",
+      "source_dir": "experiments/runs/2026-10-20_resnet50_baseline",
+      "imported_at": "2026-10-26T08:00:00Z",
+      "git_commit": "a1b2c3d4e5",
+      "artifacts": [
+        {
+          "path": "figures/loss_convergence.pdf",
+          "source_file": "experiments/runs/2026-10-20_resnet50_baseline/plots/loss.pdf",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "imported_at": "2026-10-26T08:00:00Z"
+        },
+        {
+          "path": "tables/accuracy_summary.tex",
+          "source_file": "experiments/runs/2026-10-20_resnet50_baseline/tables/metrics.tex",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "imported_at": "2026-10-26T08:00:00Z"
+        }
+      ]
+    }
+  }
+}

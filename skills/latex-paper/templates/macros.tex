@@ -1,0 +1,32 @@
+% =============================================================================
+% Custom Macros and Notation Definitions
+% =============================================================================
+
+% Draft mode toggle: set \draftfalse for camera-ready submission
+\newif\ifdraft
+\drafttrue
+% \draftfalse
+
+% Collaborative comment annotations
+\ifdraft
+  \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+  \newcommand{\note}[1]{\textcolor{blue}{\textbf{[NOTE: #1]}}}
+  \newcommand{\response}[1]{\textcolor{ForestGreen}{\textbf{[RESPONSE: #1]}}}
+\else
+  \newcommand{\todo}[1]{}
+  \newcommand{\note}[1]{}
+  \newcommand{\response}[1]{}
+\fi
+
+% Common Mathematical Operators and Notations
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+
+% Bold vectors and matrices
+\newcommand{\vecx}{\mathbf{x}}
+\newcommand{\vecy}{\mathbf{y}}
+\newcommand{\vecw}{\mathbf{w}}
+\newcommand{\matW}{\mathbf{W}}
+\newcommand{\matX}{\mathbf{X}}
